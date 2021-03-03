@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    std::ifstream file(argv[1]);
+    std::ifstream file(argv[1], std::ios_base::binary);
     if (!file.is_open()) {
         std::cout << "Could not find rom " << argv[1] << '\n';
         return -1;
