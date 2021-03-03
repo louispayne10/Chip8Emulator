@@ -43,7 +43,7 @@ void handle_clear_screen(std::array<std::array<bool, 64>, 32>& pixel_memory) {
 void handle_ret_subroutine(uint16_t& program_counter, StaticStack& stack) {
     const uint16_t new_pc = stack.top();
     stack.pop();
-    program_counter = new_pc;
+    program_counter = new_pc + 2;
 }
 
 void handle_goto_addr(uint16_t instruction, uint16_t& program_counter) {
@@ -51,7 +51,7 @@ void handle_goto_addr(uint16_t instruction, uint16_t& program_counter) {
 }
 
 void handle_call_subroutine(uint16_t instruction, uint16_t& program_counter, StaticStack& stack) {
-    stack.push(program_counter + 2);
+    stack.push(program_counter);
     program_counter = instruction & 0x0FFF;
 }
 
@@ -304,6 +304,8 @@ Chip8Emulator::Action Chip8Emulator::process_next_instruction() {
     const uint16_t instruction = (static_cast<uint16_t>(hi) << 8 | lo);
     cycle_count++;
 
+    std::cout << "instruction: " << std::hex << instruction << std::endl;
+
     constexpr auto cycles_for_decrement = clock_speed_hz / 60;
     if (cycle_count % cycles_for_decrement == 0) {
         if (delay_timer != 0)
@@ -320,7 +322,8 @@ Chip8Emulator::Action Chip8Emulator::process_next_instruction() {
             return Action::ReDraw;
         } else if (instruction == 0x00EE) { // return from subroutine
             handle_ret_subroutine(program_counter, stack);
-        } else { // call machine code routine on old implementations, we ignore it
+        } else {                      // call machine code routine on old implementations, we ignore it
+            assert(instruction != 0); // this would almost certainley be an error
             program_counter += 2;
         }
         break;
