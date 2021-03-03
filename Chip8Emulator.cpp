@@ -36,8 +36,7 @@ namespace
 
 void handle_clear_screen(std::array<std::array<bool, 64>, 32>& pixel_memory) {
     for (auto& col : pixel_memory)
-        for (auto& cell : col)
-            cell = false;
+        std::fill(col.begin(), col.end(), false);
 }
 
 void handle_ret_subroutine(uint16_t& program_counter, StaticStack& stack) {
