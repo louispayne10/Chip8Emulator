@@ -15,6 +15,8 @@ namespace
 {
 constexpr uint32_t sprite_scale    = 10;
 constexpr auto time_between_cycles = system_clock::duration(seconds(1)) / Chip8Emulator::clock_speed_hz;
+constexpr auto frames_per_second   = 60;
+constexpr auto time_between_draws  = system_clock::duration(seconds(1)) / frames_per_second;
 
 constexpr std::array<SDL_Scancode, 16> key_map = {
     SDL_SCANCODE_KP_0, // 0
@@ -101,6 +103,8 @@ int main(int argc, char* argv[]) {
     Chip8Emulator emulator(program_bytes.begin(), program_bytes.end());
     bool run                                 = true;
     steady_clock::time_point last_cycle_time = steady_clock::now();
+    steady_clock::time_point last_draw_time  = steady_clock::now();
+    bool need_redraw                         = false;
     while (run) {
         const auto time_passed = steady_clock::now() - last_cycle_time;
         if (time_between_cycles > time_passed)
@@ -149,6 +153,10 @@ int main(int argc, char* argv[]) {
                 }
             }
         } else if (action == Chip8Emulator::Action::ReDraw) {
+            need_redraw = true;
+        }
+
+        if (need_redraw && ((steady_clock::now() - last_draw_time) > time_between_draws)) {
             std::array<uint32_t, 64 * 32> sdl_pixel_data; // NOLINT - no need to initialise
             size_t index = 0;
             for (const auto& row : emulator.video_memory()) {
@@ -166,6 +174,9 @@ int main(int argc, char* argv[]) {
             SDL_RenderClear(renderer.get());
             SDL_RenderCopy(renderer.get(), texture.get(), nullptr, nullptr);
             SDL_RenderPresent(renderer.get());
+
+            last_draw_time = steady_clock::now();
+            need_redraw    = false;
         }
     }
 
