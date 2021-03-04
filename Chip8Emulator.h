@@ -82,7 +82,7 @@ public:
 private:
     std::array<uint8_t, 4096> memory{};
     std::array<std::array<bool, 64>, 32> pixel_memory{};
-    StaticStack stack{}; // TODO: move to a fixed 16 size stack
+    StaticStack stack{};
     std::array<uint8_t, 16> data_registers{};
     uint16_t index_register{};
     uint16_t program_counter{};
