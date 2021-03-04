@@ -1,5 +1,6 @@
 #include "Chip8Emulator.h"
 
+#define SDL_MAIN_HANDLED
 #include "SDL.h"
 #include <algorithm>
 #include <array>

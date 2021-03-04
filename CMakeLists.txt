@@ -30,5 +30,4 @@ else()
 endif()
 
 find_package(SDL2 REQUIRED)
-target_include_directories(chip8 PRIVATE ${SDL2_INCLUDE_DIR})
-target_link_libraries(chip8 PRIVATE SDL2::SDL2 SDL2::SDL2main)
+target_link_libraries(chip8 PRIVATE SDL2::SDL2)
