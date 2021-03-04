@@ -1,10 +1,13 @@
 #include "Chip8Emulator.h"
 
 #include "SDL.h"
+#include <algorithm>
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <thread> // this_thread
 #include <vector>

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <stack>
+#include <stdexcept>
 
 class StaticStack {
 public:
