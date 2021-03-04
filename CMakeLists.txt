@@ -6,9 +6,12 @@ project(
     LANGUAGES CXX
 )
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 if(ENABLE_CLANG_TIDY)
   find_program(CLANGTIDY clang-tidy)
   if(CLANGTIDY)
@@ -24,7 +27,6 @@ if(MSVC)
 else()
   target_compile_options(chip8 PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()
-set_property(TARGET chip8 PROPERTY CXX_STANDARD 17)
 
 find_package(SDL2 REQUIRED)
 target_include_directories(chip8 PRIVATE ${SDL2_INCLUDE_DIR})
