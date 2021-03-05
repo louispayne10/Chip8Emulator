@@ -224,9 +224,9 @@ void handle_keyop_poll(uint16_t instruction,
     const bool is_pressed = input_state[input_idx];
 
     const uint8_t op = instruction & 0xFF;
-    if (op == 0x9E && is_pressed || op == 0xA1 && !is_pressed) {
+    if ((op == 0x9E && is_pressed) || (op == 0xA1 && !is_pressed)) {
         program_counter += 4;
-    } else if (op == 0x9E && !is_pressed || op == 0xA1 && is_pressed) {
+    } else if ((op == 0x9E && !is_pressed) || (op == 0xA1 && is_pressed)) {
         program_counter += 2;
     } else {
         assert(false);
