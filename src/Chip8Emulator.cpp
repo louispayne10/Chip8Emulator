@@ -2,37 +2,12 @@
 
 #include <cassert>
 #include <iostream>
-#include <random>
 
 namespace
 {
-
-class RandomNumberGenerator {
-public:
-    RandomNumberGenerator()
-        : gen(rd()),
-          distrib(0, 255) {
-    }
-
-    uint8_t next() {
-        return static_cast<uint8_t>(distrib(gen));
-    }
-
-private:
-    std::random_device rd;
-    std::mt19937 gen;
-    std::uniform_int_distribution<uint16_t> distrib; // for some reason unsigned char is not a defined template parameter
-};
-
-RandomNumberGenerator rng;
 
 constexpr uint8_t vf_index   = 15;
 constexpr int clock_speed_hz = 540;
-
-} // namespace
-
-namespace
-{
 
 void handle_clear_screen(std::array<std::array<bool, 64>, 32>& pixel_memory) {
     for (auto& col : pixel_memory)
@@ -178,7 +153,7 @@ void handle_jump_addr_offset(uint16_t instruction, uint16_t& program_counter, co
     program_counter     = addr + registers[0];
 }
 
-void handle_rand(uint16_t instruction, std::array<uint8_t, 16>& data_registers) {
+void handle_rand(uint16_t instruction, std::array<uint8_t, 16>& data_registers, RandomNumberGenerator& rng) {
     const uint8_t vx_index = (instruction & 0x0F00) >> 8;
     uint8_t& vx            = data_registers[vx_index];
     const uint8_t nn       = instruction & 0xFF;
@@ -364,7 +339,7 @@ Chip8Emulator::Action Chip8Emulator::process_next_instruction() {
         handle_jump_addr_offset(instruction, program_counter, data_registers);
         break;
     case 0xC000: // set vx to result of a bitwise + random
-        handle_rand(instruction, data_registers);
+        handle_rand(instruction, data_registers, rng);
         program_counter += 2;
         break;
     case 0xD000: // display a sprite at a coordinate

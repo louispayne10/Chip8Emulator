@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 
+#include "RandomNumberGenerator.h"
 #include "StaticStack.h"
 
 constexpr uint16_t load_address                  = 0x200;
@@ -67,4 +68,5 @@ private:
     uint8_t wait_for_key_reg_idx = 0; // When the opcode to wait for a keypress is used we use this to "remember" which reg to put it in
 
     uint64_t cycle_count = 0;
+    RandomNumberGenerator rng;
 };
