@@ -1,0 +1,7 @@
+add_executable(chip8 main.cpp Chip8Emulator.cpp)
+if(MSVC)
+  target_compile_options(chip8 PRIVATE /W4 /WX /permissive-)
+else()
+  target_compile_options(chip8 PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+target_link_libraries(chip8 PRIVATE SDL2::SDL2)
