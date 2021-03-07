@@ -42,13 +42,6 @@ constexpr std::array<SDL_Scancode, 16> key_map = {
     SDL_SCANCODE_F,    // F
 };
 
-struct SdlInitialiserRaii {
-    explicit SdlInitialiserRaii(uint32_t flags) { SDL_Init(flags); }
-    ~SdlInitialiserRaii() { SDL_Quit(); }
-    SdlInitialiserRaii(const SdlInitialiserRaii&) = delete;
-    SdlInitialiserRaii& operator=(const SdlInitialiserRaii&) = delete;
-};
-
 struct SdlWindowDeleter {
     void operator()(SDL_Window* wnd) {
         SDL_DestroyWindow(wnd);
@@ -81,7 +74,11 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    SdlInitialiserRaii sdlInstance(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO);
+    // checking for errors with these using raii is a bit of a PITA, if needed create a scopeguard for the cleanup functions
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO) != 0) {
+        std::cout << "SDL_Init failed. Error: " << SDL_GetError() << "\n";
+        return -1;
+    };
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == -1) {
         std::cout << "Mix_OpenAudio: " << Mix_GetError() << "\n";
         return -1;
