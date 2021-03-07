@@ -23,5 +23,6 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 find_package(SDL2 REQUIRED)
+find_package(sdl2-mixer REQUIRED)
 
 add_subdirectory(src)

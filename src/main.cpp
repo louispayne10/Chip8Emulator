@@ -2,6 +2,7 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
+#include "SDL_mixer.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -81,6 +82,11 @@ int main(int argc, char* argv[]) {
     }
 
     SdlInitialiserRaii sdlInstance(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO);
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == -1) {
+        std::cout << "Mix_OpenAudio: " << Mix_GetError() << "\n";
+        return -1;
+    }
+
     std::unique_ptr<SDL_Window, SdlWindowDeleter> window(SDL_CreateWindow("Chip8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 64 * sprite_scale, 32 * sprite_scale, SDL_WINDOW_OPENGL));
     if (!window) {
         std::cout << "Could not create window\n";
@@ -183,6 +189,9 @@ int main(int argc, char* argv[]) {
             need_redraw    = false;
         }
     }
+
+    Mix_Quit();
+    SDL_Quit();
 
     return 0;
 }

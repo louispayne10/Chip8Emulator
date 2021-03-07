@@ -2,7 +2,7 @@
 This is an implementation of a chip8 emulator. It is written using C++17 and SDL2. 
 
 ## Build and run
-Requires `cmake` and `SDL2`. Example build using `vcpkg`:
+Requires `cmake`, `SDL2` and `SDL_Mixer 2.0`. Example build using `vcpkg`:
 ```
 mkdir build
 cd build
