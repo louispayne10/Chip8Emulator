@@ -7,7 +7,7 @@ Requires `cmake`, `SDL2` and `SDL_Mixer 2.0`. Example build using `vcpkg`:
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake -- build . --config Release
+cmake --build . --config Release
 ```
 Then to run:
 ```
