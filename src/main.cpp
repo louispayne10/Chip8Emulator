@@ -43,9 +43,7 @@ constexpr std::array<SDL_Scancode, 16> key_map = {
 };
 
 struct SdlWindowDeleter {
-    void operator()(SDL_Window* wnd) {
-        SDL_DestroyWindow(wnd);
-    }
+    void operator()(SDL_Window* wnd) { SDL_DestroyWindow(wnd); }
 };
 struct SdlRendererDeleter {
     void operator()(SDL_Renderer* rnd) { SDL_DestroyRenderer(rnd); }
