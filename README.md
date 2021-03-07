@@ -13,3 +13,6 @@ Then to run:
 ```
 ./chip8 /path/to/rom
 ```
+
+## Acknowledgements
+The sound `tone.wav` in the assets directory is from [here](https://freesound.org/people/austin1234575/sounds/213795/).

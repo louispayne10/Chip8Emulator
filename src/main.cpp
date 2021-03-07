@@ -53,6 +53,9 @@ struct SdlRendererDeleter {
 struct SdlTextureDeleter {
     void operator()(SDL_Texture* txt) { SDL_DestroyTexture(txt); }
 };
+struct SdlMixChunkDeleter {
+    void operator()(Mix_Chunk* chunk) { Mix_FreeChunk(chunk); }
+};
 
 } // namespace
 
@@ -106,6 +109,13 @@ int main(int argc, char* argv[]) {
         std::cout << "Could not create texture for framebuffer: " << SDL_GetError() << "\n";
         return -1;
     }
+
+    std::unique_ptr<Mix_Chunk, SdlMixChunkDeleter> sound_effect(Mix_LoadWAV("assets/tone.wav"));
+    if (!sound_effect) {
+        std::cout << "Failed to load sound effect. SDL_Mixer Error:" << Mix_GetError() << "\n";
+        return -1;
+    }
+    Mix_Volume(-1, MIX_MAX_VOLUME / 8);
 
     Chip8Emulator emulator(program_bytes.begin(), program_bytes.end());
     bool run                                 = true;
@@ -184,6 +194,14 @@ int main(int argc, char* argv[]) {
 
             last_draw_time = steady_clock::now();
             need_redraw    = false;
+        }
+
+        if (emulator.should_play_sound()) {
+            if (Mix_PlayChannelTimed(-1, sound_effect.get(), -1, -1) == -1) {
+                std::cout << "Error playing sound. Error: " << Mix_GetError() << "\n";
+            }
+        } else {
+            Mix_HaltChannel(-1);
         }
     }
 
