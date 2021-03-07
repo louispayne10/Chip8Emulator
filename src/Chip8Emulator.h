@@ -54,6 +54,10 @@ public:
     const std::array<std::array<bool, 64>, 32>& video_memory() const noexcept { return pixel_memory; }
     void key_pressed_upon_wait(uint8_t key) noexcept;
 
+    [[nodiscard]] bool should_play_sound() const noexcept {
+        return sound_timer != 0;
+    }
+
 private:
     std::array<uint8_t, 4096> memory{};
     std::array<std::array<bool, 64>, 32> pixel_memory{};
