@@ -73,4 +73,41 @@ private:
 
     uint64_t cycle_count = 0;
     RandomNumberGenerator rng;
+
+    // instruction handlers
+    Action op_cls(uint16_t instruction);
+    Action op_ret(uint16_t instruction);
+    Action op_sys(uint16_t instruction);
+    Action op_jp(uint16_t instruction);
+    Action op_call(uint16_t instruction);
+    Action op_se_byte(uint16_t instruction);
+    Action op_sne(uint16_t instruction);
+    Action op_se_reg(uint16_t instruction);
+    Action op_ld_byte(uint16_t instruction);
+    Action op_add(uint16_t instruction);
+    Action op_ld_reg(uint16_t instruction);
+    Action op_or(uint16_t instruction);
+    Action op_and(uint16_t instruction);
+    Action op_xor(uint16_t instruction);
+    Action op_add_reg(uint16_t instruction);
+    Action op_sub(uint16_t instruction);
+    Action op_shr(uint16_t instruction);
+    Action op_subn(uint16_t instruction);
+    Action op_shl(uint16_t instruction);
+    Action op_sne_reg(uint16_t instruction);
+    Action op_ld_addr(uint16_t instruction);
+    Action op_jp_offset(uint16_t instruction);
+    Action op_rnd(uint16_t instruction);
+    Action op_drw(uint16_t instruction);
+    Action op_skp(uint16_t instruction);
+    Action op_sknp(uint16_t instruction);
+    Action op_ld_dt(uint16_t instruction);
+    Action op_ld_wait_key(uint16_t instruction);
+    Action op_ld_set_dt(uint16_t instruction);
+    Action op_ld_st(uint16_t instruction);
+    Action op_add_idx_reg(uint16_t instruction);
+    Action op_ld_font(uint16_t instruction);
+    Action op_ld_bcd(uint16_t instruction);
+    Action op_ld_reg_dump(uint16_t instruction);
+    Action op_ld_reg_store(uint16_t instruction);
 };
