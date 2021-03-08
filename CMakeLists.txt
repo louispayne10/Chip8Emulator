@@ -22,6 +22,17 @@ if(ENABLE_CLANG_TIDY)
   endif()
 endif()
 
+option(ENABLE_IWYU "Enable include-what-you-use" OFF)
+if(ENABLE_IWYU)
+  find_program(iwyu_path NAMES include-what-you-use iwyu)
+  if(iwyu_path)
+    message(STATUS "include-what-you-use found and enabled")
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+  else()
+    message(FATAL_ERROR "include-what-you-use requested but executable not found")
+  endif()
+endif()
+
 find_package(SDL2 REQUIRED)
 find_package(sdl2-mixer REQUIRED)
 
