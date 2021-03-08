@@ -6,8 +6,7 @@
 namespace
 {
 
-constexpr uint8_t vf_index   = 15;
-constexpr int clock_speed_hz = 540;
+constexpr uint8_t vf_index = 15;
 
 std::pair<uint8_t, uint8_t> get_regs_math_ops(int16_t instruction) {
     return {
