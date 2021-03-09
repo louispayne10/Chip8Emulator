@@ -1,9 +1,10 @@
 add_executable(chip8 main.cpp Chip8Emulator.cpp)
-if(MSVC)
-  target_compile_options(chip8 PRIVATE /W4 /WX /permissive-)
-else()
-  target_compile_options(chip8 PRIVATE -Wall -Wextra -pedantic -Werror)
-endif()
+
+target_compile_options(chip8 PRIVATE 
+  $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive /W4 /WX>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+)
+
 target_link_libraries(chip8 PRIVATE SDL2::SDL2 SDL2::SDL2_mixer)
 
 # we want to copy the assets directory to the same directory the executable is in post build
