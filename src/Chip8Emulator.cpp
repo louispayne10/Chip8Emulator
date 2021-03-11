@@ -420,7 +420,7 @@ Chip8Emulator::Action Chip8Emulator::op_ld_reg_dump(uint16_t instruction) {
     const uint8_t reg_index = (instruction & 0x0F00) >> 8;
     if (size_t(index_register + reg_index) >= memory.size())
         return Action::Crash;
-    for (size_t i = 0; i <= reg_index; ++i) { // TODO: use std::copy
+    for (size_t i = 0; i <= reg_index; ++i) {
         memory[index_register + i] = data_registers[i];
     }
     program_counter += 2;
@@ -431,7 +431,7 @@ Chip8Emulator::Action Chip8Emulator::op_ld_reg_store(uint16_t instruction) {
     const uint8_t reg_index = (instruction & 0x0F00) >> 8;
     if (size_t(index_register + reg_index) >= memory.size())
         return Action::Crash;
-    for (size_t i = 0; i <= reg_index; ++i) { // TODO: use std::copy
+    for (size_t i = 0; i <= reg_index; ++i) {
         data_registers[i] = memory[index_register + i];
     }
     program_counter += 2;
