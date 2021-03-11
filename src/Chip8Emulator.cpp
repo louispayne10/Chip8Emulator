@@ -183,36 +183,36 @@ Chip8Emulator::Action Chip8Emulator::op_add(uint16_t instruction) {
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_reg(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
-    data_registers[reg_x_idx]   = data_registers[reg_y_idx];
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    data_registers[reg_x_idx]         = data_registers[reg_y_idx];
     program_counter += 2;
     return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_or(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx] |= data_registers[reg_y_idx];
     program_counter += 2;
     return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_and(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx] &= data_registers[reg_y_idx];
     program_counter += 2;
     return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_xor(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx] ^= data_registers[reg_y_idx];
     program_counter += 2;
     return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_add_reg(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
-    const uint8_t old           = data_registers[reg_x_idx];
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    const uint8_t old                 = data_registers[reg_x_idx];
     data_registers[reg_x_idx] += data_registers[reg_y_idx];
     if (data_registers[reg_x_idx] < old) // overflow
         data_registers[vf_index] = 1;
@@ -223,8 +223,8 @@ Chip8Emulator::Action Chip8Emulator::op_add_reg(uint16_t instruction) {
 }
 
 Chip8Emulator::Action Chip8Emulator::op_sub(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
-    const uint8_t old           = data_registers[reg_x_idx];
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    const uint8_t old                 = data_registers[reg_x_idx];
     data_registers[reg_x_idx] -= data_registers[reg_y_idx];
     if (data_registers[reg_x_idx] > old) { // borrow
         data_registers[vf_index] = 0;
@@ -236,17 +236,17 @@ Chip8Emulator::Action Chip8Emulator::op_sub(uint16_t instruction) {
 }
 
 Chip8Emulator::Action Chip8Emulator::op_shr(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
-    data_registers[vf_index]    = data_registers[reg_x_idx] & 0x0001;
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    data_registers[vf_index]          = data_registers[reg_x_idx] & 0x0001;
     data_registers[reg_x_idx] >>= 1;
     program_counter += 2;
     return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_subn(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
-    const uint8_t old           = data_registers[reg_x_idx];
-    data_registers[reg_x_idx]   = data_registers[reg_y_idx] - data_registers[reg_x_idx];
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    const uint8_t old                 = data_registers[reg_x_idx];
+    data_registers[reg_x_idx]         = data_registers[reg_y_idx] - data_registers[reg_x_idx];
     if (data_registers[reg_x_idx] > old) { // borrow
         data_registers[vf_index] = 0;
     } else {
@@ -257,8 +257,8 @@ Chip8Emulator::Action Chip8Emulator::op_subn(uint16_t instruction) {
 }
 
 Chip8Emulator::Action Chip8Emulator::op_shl(uint16_t instruction) {
-    auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
-    data_registers[vf_index]    = data_registers[reg_x_idx] & 0b1000'0000;
+    const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
+    data_registers[vf_index]          = data_registers[reg_x_idx] & 0b1000'0000;
     data_registers[reg_x_idx] <<= 1;
     program_counter += 2;
     return Action::DoNothing;
