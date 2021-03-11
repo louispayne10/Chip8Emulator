@@ -1,7 +1,6 @@
 #include "Chip8Emulator.h"
 
 #include <cassert>
-#include <iostream>
 
 namespace
 {
