@@ -74,6 +74,11 @@ private:
     uint64_t cycle_count = 0;
     RandomNumberGenerator rng;
 
+    // using these to increase the pc and return allows us to crash on the instruction that
+    // causes the program_counter to go out of bounds opposed to waiting until the next cycle
+    Action increase_pc(Action action);
+    Action change_pc(uint16_t new_pc);
+
     // instruction handlers
     Action op_cls(uint16_t instruction);
     Action op_ret(uint16_t instruction);

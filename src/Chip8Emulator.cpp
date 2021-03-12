@@ -17,8 +17,7 @@ std::pair<uint8_t, uint8_t> get_regs_math_ops(int16_t instruction) {
 } // namespace
 
 Chip8Emulator::Action Chip8Emulator::process_next_instruction() {
-    if (size_t(program_counter - 1) >= memory.size()) // would be better to crash on the instruction that caused this
-        return Action::Crash;
+    assert(size_t(program_counter - 1) < memory.size());
     const uint8_t hi           = memory[program_counter];
     const uint8_t lo           = memory[program_counter + 1];
     const uint16_t instruction = (static_cast<uint16_t>(hi) << 8 | lo);
@@ -92,6 +91,22 @@ Chip8Emulator::Action Chip8Emulator::process_next_instruction() {
     return Action::Crash;
 }
 
+Chip8Emulator::Action Chip8Emulator::increase_pc(Action action) {
+    if (size_t(program_counter + 2) >= memory.size())
+        return Action::Crash;
+
+    program_counter += 2;
+    return action;
+}
+
+Chip8Emulator::Action Chip8Emulator::change_pc(uint16_t new_pc) {
+    if (size_t(new_pc + 2) >= memory.size())
+        return Action::Crash;
+
+    program_counter = new_pc;
+    return Action::DoNothing;
+}
+
 void Chip8Emulator::key_pressed_upon_wait(uint8_t key) noexcept {
     assert(key < 16);
     data_registers[wait_for_key_reg_idx] = key;
@@ -100,8 +115,7 @@ void Chip8Emulator::key_pressed_upon_wait(uint8_t key) noexcept {
 Chip8Emulator::Action Chip8Emulator::op_cls([[maybe_unused]] uint16_t instruction) {
     for (auto& col : pixel_memory)
         std::fill(col.begin(), col.end(), false);
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ret([[maybe_unused]] uint16_t instruction) {
@@ -109,104 +123,91 @@ Chip8Emulator::Action Chip8Emulator::op_ret([[maybe_unused]] uint16_t instructio
         return Action::Crash;
     const uint16_t new_pc = stack.top();
     stack.pop();
-    program_counter = new_pc + 2;
-    return Action::DoNothing;
+    return change_pc(new_pc + 2);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_sys([[maybe_unused]] uint16_t instruction) {
     // ignore this instruction
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_jp(uint16_t instruction) {
-    program_counter = instruction & 0x0FFF;
-    return Action::DoNothing;
+    return change_pc(instruction & 0x0FFF);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_call(uint16_t instruction) {
     if (stack.full())
         return Action::Crash;
     stack.push(program_counter);
-    program_counter = instruction & 0x0FFF;
-    return Action::DoNothing;
+    return change_pc(instruction & 0x0FFF);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_se_byte(uint16_t instruction) {
     const uint8_t val       = instruction & 0xFF;
     const uint8_t reg_index = (instruction & 0x0F00) >> 8;
     if (data_registers[reg_index] == val) {
-        program_counter += 4;
+        return change_pc(program_counter + 4);
     } else {
-        program_counter += 2;
+        return change_pc(program_counter + 2);
     }
-    return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_sne(uint16_t instruction) {
     const uint8_t val       = instruction & 0xFF;
     const uint8_t reg_index = (instruction & 0x0F00) >> 8;
     if (data_registers[reg_index] != val) {
-        program_counter += 4;
+        return change_pc(program_counter + 4);
     } else {
-        program_counter += 2;
+        return change_pc(program_counter + 2);
     }
-    return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_se_reg(uint16_t instruction) {
     const uint8_t reg1_index = (instruction & 0x0F00) >> 8;
     const uint8_t reg2_index = (instruction & 0x00F0) >> 4;
     if (data_registers[reg1_index] == data_registers[reg2_index]) {
-        program_counter += 4;
+        return change_pc(program_counter + 4);
     } else {
-        program_counter += 2;
+        return change_pc(program_counter + 2);
     }
-    return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_byte(uint16_t instruction) {
     const uint8_t reg_index   = (instruction & 0x0F00) >> 8;
     const uint8_t val         = instruction & 0xFF;
     data_registers[reg_index] = val;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_add(uint16_t instruction) {
     const uint8_t reg_index = (instruction & 0x0F00) >> 8;
     const uint8_t val       = instruction & 0xFF;
     data_registers[reg_index] += val; // let the overflow happen - intended behaviour
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_reg(uint16_t instruction) {
     const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx]         = data_registers[reg_y_idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_or(uint16_t instruction) {
     const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx] |= data_registers[reg_y_idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_and(uint16_t instruction) {
     const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx] &= data_registers[reg_y_idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_xor(uint16_t instruction) {
     const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[reg_x_idx] ^= data_registers[reg_y_idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_add_reg(uint16_t instruction) {
@@ -217,8 +218,7 @@ Chip8Emulator::Action Chip8Emulator::op_add_reg(uint16_t instruction) {
         data_registers[vf_index] = 1;
     else
         data_registers[vf_index] = 0;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_sub(uint16_t instruction) {
@@ -230,16 +230,14 @@ Chip8Emulator::Action Chip8Emulator::op_sub(uint16_t instruction) {
     } else {
         data_registers[vf_index] = 1;
     }
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_shr(uint16_t instruction) {
     const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[vf_index]          = data_registers[reg_x_idx] & 0x0001;
     data_registers[reg_x_idx] >>= 1;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_subn(uint16_t instruction) {
@@ -251,46 +249,40 @@ Chip8Emulator::Action Chip8Emulator::op_subn(uint16_t instruction) {
     } else {
         data_registers[vf_index] = 1;
     }
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_shl(uint16_t instruction) {
     const auto [reg_x_idx, reg_y_idx] = get_regs_math_ops(instruction);
     data_registers[vf_index]          = data_registers[reg_x_idx] & 0b1000'0000;
     data_registers[reg_x_idx] <<= 1;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_sne_reg(uint16_t instruction) {
     const uint8_t reg1_index = (instruction & 0x0F00) >> 8;
     const uint8_t reg2_index = (instruction & 0x00F0) >> 4;
     if (data_registers[reg1_index] != data_registers[reg2_index]) {
-        program_counter += 4;
+        return change_pc(program_counter + 4);
     } else {
-        program_counter += 2;
+        return change_pc(program_counter + 2);
     }
-    return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_addr(uint16_t instruction) {
     index_register = instruction & 0x0FFF;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_jp_offset(uint16_t instruction) {
-    program_counter = (instruction & 0x0FFF) + data_registers[0];
-    return Action::DoNothing;
+    return change_pc((instruction & 0x0FFF) + data_registers[0]);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_rnd(uint16_t instruction) {
     const uint8_t vx_index   = (instruction & 0x0F00) >> 8;
     const uint8_t val        = instruction & 0xFF;
     data_registers[vx_index] = val & rng.next();
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_drw(uint16_t instruction) {
@@ -319,8 +311,7 @@ Chip8Emulator::Action Chip8Emulator::op_drw(uint16_t instruction) {
         data_registers[vf_index] = 1;
     }
 
-    program_counter += 2;
-    return Action::ReDraw;
+    return increase_pc(Action::ReDraw);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_skp(uint16_t instruction) {
@@ -330,11 +321,10 @@ Chip8Emulator::Action Chip8Emulator::op_skp(uint16_t instruction) {
         return Action::Crash;
 
     if (input_state[input_idx]) {
-        program_counter += 4;
+        return change_pc(program_counter + 4);
     } else {
-        program_counter += 2;
+        return change_pc(program_counter + 2);
     }
-    return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_sknp(uint16_t instruction) {
@@ -344,45 +334,39 @@ Chip8Emulator::Action Chip8Emulator::op_sknp(uint16_t instruction) {
         return Action::Crash;
 
     if (!input_state[input_idx]) {
-        program_counter += 4;
+        return change_pc(program_counter + 4);
     } else {
-        program_counter += 2;
+        return change_pc(program_counter + 2);
     }
-    return Action::DoNothing;
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_dt(uint16_t instruction) {
     const uint8_t idx   = (instruction & 0x0F00) >> 8;
     data_registers[idx] = delay_timer;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_wait_key(uint16_t instruction) {
     wait_for_key_reg_idx = (instruction & 0x0F00) >> 8;
-    program_counter += 2;
-    return Action::WaitForInput;
+    return increase_pc(Action::WaitForInput);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_set_dt(uint16_t instruction) {
     const uint8_t idx = (instruction & 0x0F00) >> 8;
     delay_timer       = data_registers[idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_st(uint16_t instruction) {
     const uint8_t idx = (instruction & 0x0F00) >> 8;
     sound_timer       = data_registers[idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_add_idx_reg(uint16_t instruction) {
     const uint8_t idx = (instruction & 0x0F00) >> 8;
     index_register += data_registers[idx];
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_font(uint16_t instruction) {
@@ -393,8 +377,7 @@ Chip8Emulator::Action Chip8Emulator::op_ld_font(uint16_t instruction) {
 
     // each font is 5 bytes, they are loaded in at 0
     index_register = val_to_get * 5;
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_bcd(uint16_t instruction) {
@@ -412,8 +395,7 @@ Chip8Emulator::Action Chip8Emulator::op_ld_bcd(uint16_t instruction) {
     memory[index_register + 1] = tens_digit;
     memory[index_register + 2] = single_digit;
 
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_reg_dump(uint16_t instruction) {
@@ -423,8 +405,7 @@ Chip8Emulator::Action Chip8Emulator::op_ld_reg_dump(uint16_t instruction) {
     for (size_t i = 0; i <= reg_index; ++i) {
         memory[index_register + i] = data_registers[i];
     }
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
 
 Chip8Emulator::Action Chip8Emulator::op_ld_reg_store(uint16_t instruction) {
@@ -434,6 +415,5 @@ Chip8Emulator::Action Chip8Emulator::op_ld_reg_store(uint16_t instruction) {
     for (size_t i = 0; i <= reg_index; ++i) {
         data_registers[i] = memory[index_register + i];
     }
-    program_counter += 2;
-    return Action::DoNothing;
+    return increase_pc(Action::DoNothing);
 }
