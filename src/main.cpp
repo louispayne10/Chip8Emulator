@@ -120,6 +120,7 @@ int main(int argc, char* argv[]) {
     steady_clock::time_point last_cycle_time = steady_clock::now();
     steady_clock::time_point last_draw_time  = steady_clock::now();
     bool need_redraw                         = false;
+    bool playing_sound                       = false;
     while (run) {
         const auto time_passed = steady_clock::now() - last_cycle_time;
         if (time_between_cycles > time_passed)
@@ -194,12 +195,14 @@ int main(int argc, char* argv[]) {
             need_redraw    = false;
         }
 
-        if (emulator.should_play_sound()) {
+        if (!playing_sound && emulator.should_play_sound()) {
             if (Mix_PlayChannelTimed(-1, sound_effect.get(), -1, -1) == -1) {
                 std::cout << "Error playing sound. Error: " << Mix_GetError() << "\n";
             }
-        } else {
+            playing_sound = true;
+        } else if (playing_sound && !emulator.should_play_sound()) {
             Mix_HaltChannel(-1);
+            playing_sound = false;
         }
     }
 
