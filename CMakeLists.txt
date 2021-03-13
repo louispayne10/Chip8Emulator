@@ -40,6 +40,11 @@ if(ENABLE_IWYU)
   endif()
 endif()
 
+# Link with this library to receive all warnings for a given compiler
+add_library(project_warnings INTERFACE)
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(project_warnings)
+
 find_package(SDL2 REQUIRED)
 find_package(sdl2-mixer REQUIRED)
 
