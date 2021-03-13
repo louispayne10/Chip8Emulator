@@ -59,58 +59,58 @@ struct SdlMixChunkDeleter {
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        std::cout << "Usage: " << argv[0] << " path_to_rom\n";
+        std::cerr << "Usage: " << argv[0] << " path_to_rom\n";
         return -1;
     }
 
     std::ifstream file(argv[1], std::ios_base::binary);
     if (!file.is_open()) {
-        std::cout << "Could not find rom " << argv[1] << '\n';
+        std::cerr << "Could not find rom " << argv[1] << '\n';
         return -1;
     }
 
     const std::vector<uint8_t> program_bytes{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
     if (program_bytes.empty()) {
-        std::cout << "rom is empty\n";
+        std::cerr << "rom is empty\n";
         return -1;
     }
 
     // checking for errors with these using raii is a bit of a PITA, if needed create a scopeguard for the cleanup functions
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO) != 0) {
-        std::cout << "SDL_Init failed. Error: " << SDL_GetError() << "\n";
+        std::cerr << "SDL_Init failed. Error: " << SDL_GetError() << "\n";
         return -1;
     };
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == -1) {
-        std::cout << "Mix_OpenAudio: " << Mix_GetError() << "\n";
+        std::cerr << "Mix_OpenAudio: " << Mix_GetError() << "\n";
         return -1;
     }
 
     std::unique_ptr<SDL_Window, SdlWindowDeleter> window(SDL_CreateWindow("Chip8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 64 * sprite_scale, 32 * sprite_scale, SDL_WINDOW_OPENGL));
     if (!window) {
-        std::cout << "Could not create window\n";
+        std::cerr << "Could not create window\n";
         return -1;
     }
 
     std::unique_ptr<SDL_Renderer, SdlRendererDeleter> renderer(SDL_CreateRenderer(window.get(), -1, 0));
     if (!renderer) {
-        std::cout << "Could not create renderer\n";
+        std::cerr << "Could not create renderer\n";
         return -1;
     }
     if (SDL_RenderSetLogicalSize(renderer.get(), 64, 32) != 0) {
-        std::cout << "Could not set renderer logical size: " << SDL_GetError() << "\n";
+        std::cerr << "Could not set renderer logical size: " << SDL_GetError() << "\n";
         return -1;
     }
 
     // This texture will act as our framebuffer
     std::unique_ptr<SDL_Texture, SdlTextureDeleter> texture(SDL_CreateTexture(renderer.get(), SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 64, 32));
     if (!texture) {
-        std::cout << "Could not create texture for framebuffer: " << SDL_GetError() << "\n";
+        std::cerr << "Could not create texture for framebuffer: " << SDL_GetError() << "\n";
         return -1;
     }
 
     std::unique_ptr<Mix_Chunk, SdlMixChunkDeleter> sound_effect(Mix_LoadWAV("assets/tone.wav"));
     if (!sound_effect) {
-        std::cout << "Failed to load sound effect. SDL_Mixer Error:" << Mix_GetError() << "\n";
+        std::cerr << "Failed to load sound effect. SDL_Mixer Error:" << Mix_GetError() << "\n";
         return -1;
     }
     Mix_Volume(-1, MIX_MAX_VOLUME / 8);
@@ -149,13 +149,13 @@ int main(int argc, char* argv[]) {
         }
 
         if (action == Chip8Emulator::Action::Crash) {
-            std::cout << "Emulated program has crashed\n";
+            std::cerr << "Emulated program has crashed\n";
             return -1;
         } else if (action == Chip8Emulator::Action::WaitForInput) {
             while (true) {
                 const int res = SDL_WaitEvent(&e);
                 if (res == 0) {
-                    std::cout << "Wait event error\n";
+                    std::cerr << "Wait event error\n";
                     return -1;
                 }
                 if (e.type == SDL_KEYDOWN) {
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
 
         if (!playing_sound && emulator.should_play_sound()) {
             if (Mix_PlayChannelTimed(-1, sound_effect.get(), -1, -1) == -1) {
-                std::cout << "Error playing sound. Error: " << Mix_GetError() << "\n";
+                std::cerr << "Error playing sound. Error: " << Mix_GetError() << "\n";
             }
             playing_sound = true;
         } else if (playing_sound && !emulator.should_play_sound()) {
