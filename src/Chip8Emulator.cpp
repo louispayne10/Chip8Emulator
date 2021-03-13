@@ -7,7 +7,7 @@ namespace
 
 constexpr uint8_t vf_index = 15;
 
-std::pair<uint8_t, uint8_t> get_regs_math_ops(int16_t instruction) {
+std::pair<uint8_t, uint8_t> get_regs_math_ops(uint16_t instruction) {
     return {
         static_cast<uint8_t>((instruction & 0x0F00) >> 8),
         static_cast<uint8_t>((instruction & 0x00F0) >> 4)
@@ -20,7 +20,7 @@ Chip8Emulator::Action Chip8Emulator::process_next_instruction() {
     assert(size_t(program_counter - 1) < memory.size());
     const uint8_t hi           = memory[program_counter];
     const uint8_t lo           = memory[program_counter + 1];
-    const uint16_t instruction = (static_cast<uint16_t>(hi) << 8 | lo);
+    const uint16_t instruction = (static_cast<uint16_t>(hi) << 8) | lo;
     cycle_count++;
 
     constexpr auto cycles_for_decrement = clock_speed_hz / 60;

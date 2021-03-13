@@ -136,13 +136,13 @@ int main(int argc, char* argv[]) {
             } else if (e.type == SDL_KEYDOWN) {
                 const auto keyIt = std::find(key_map.begin(), key_map.end(), e.key.keysym.scancode);
                 if (keyIt != key_map.end()) {
-                    const auto idx                = std::distance(key_map.begin(), keyIt);
+                    const auto idx                = static_cast<uint8_t>(std::distance(key_map.begin(), keyIt));
                     emulator.input_buttons()[idx] = true;
                 }
             } else if (e.type == SDL_KEYUP) {
                 const auto keyIt = std::find(key_map.begin(), key_map.end(), e.key.keysym.scancode);
                 if (keyIt != key_map.end()) {
-                    const auto idx                = std::distance(key_map.begin(), keyIt);
+                    const auto idx                = static_cast<uint8_t>(std::distance(key_map.begin(), keyIt));
                     emulator.input_buttons()[idx] = false;
                 }
             }
