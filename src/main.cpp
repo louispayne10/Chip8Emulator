@@ -174,6 +174,9 @@ private:
             if (e.type == SDL_QUIT) {
                 return false;
             } else if (e.type == SDL_KEYDOWN) {
+                if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                    return false;
+
                 const auto keyIt = std::find(key_map.begin(), key_map.end(), e.key.keysym.scancode);
                 if (keyIt != key_map.end()) {
                     const auto idx                = static_cast<uint8_t>(std::distance(key_map.begin(), keyIt));
