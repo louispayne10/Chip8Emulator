@@ -114,7 +114,6 @@ public:
         steady_clock::time_point last_cycle_time = steady_clock::now();
         steady_clock::time_point last_draw_time  = steady_clock::now();
         bool need_redraw                         = false;
-        bool playing_sound                       = false;
         while (true) {
             const auto time_passed = steady_clock::now() - last_cycle_time;
             if (time_between_cycles > time_passed)
@@ -166,6 +165,7 @@ private:
     std::unique_ptr<SDL_Texture, SdlTextureDeleter> texture;
     std::unique_ptr<Mix_Chunk, SdlMixChunkDeleter> sound_effect;
 
+    bool playing_sound = false;
     Chip8Emulator emulator;
 
     bool consume_input() {
@@ -176,6 +176,10 @@ private:
             } else if (e.type == SDL_KEYDOWN) {
                 if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
                     return false;
+                else if (e.key.keysym.scancode == SDL_SCANCODE_F1) {
+                    if (!pause_game())
+                        return false;
+                }
 
                 const auto keyIt = std::find(key_map.begin(), key_map.end(), e.key.keysym.scancode);
                 if (keyIt != key_map.end()) {
@@ -232,7 +236,40 @@ private:
         SDL_RenderCopy(renderer.get(), texture.get(), nullptr, nullptr);
         SDL_RenderPresent(renderer.get());
     }
-};
+
+    bool pause_game() {
+        if (playing_sound)
+            Mix_HaltChannel(-1);
+
+        bool ret_val = false;
+        SDL_Event e;
+        while (true) {
+            const int res = SDL_WaitEvent(&e);
+            if (res == 0) {
+                std::cerr << "Wait event error\n";
+                ret_val = false;
+                break;
+            }
+            if (e.type == SDL_KEYDOWN) {
+                if (e.key.keysym.scancode == SDL_SCANCODE_F1) {
+                    ret_val = true;
+                    break;
+                } else if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+                    ret_val = false;
+                    break;
+                }
+            }
+        }
+
+        if (playing_sound) {
+            if (Mix_PlayChannelTimed(-1, sound_effect.get(), -1, -1) == -1) {
+                std::cerr << "Error playing sound. Error: " << Mix_GetError() << "\n";
+            }
+        }
+
+        return ret_val;
+    }
+}; // namespace
 
 } // namespace
 
